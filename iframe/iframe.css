@@ -1,0 +1,21 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: "Lato", "Lucida Grande", "Lucida Sans Unicode", Tahoma,
+    Sans-Serif;
+}
+
+#observed {
+  width: 100%;
+  height: 100vh;
+  background: #333642;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 23px;
+  color: white;
+  font-family: Monaco, MonoSpace;
+}
