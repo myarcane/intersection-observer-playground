@@ -1,4 +1,5 @@
 const observedDiv = document.querySelector("#observed");
+let ioData = null;
 
 const io = new IntersectionObserver(
   (entries) => {
@@ -16,18 +17,19 @@ const io = new IntersectionObserver(
         averagePosition = "inside";
       }
 
-      const ioData = {
+      ioData = {
         boundingClientRect: e.boundingClientRect,
         intersectionRect: e.intersectionRect,
         isIntersecting: e.isIntersecting,
         intersectionRatio: e.intersectionRatio,
         isVisible: e.isVisible,
-        position: observedDiv.getBoundingClientRect(),
-        averagePosition: averagePosition,
+        "vewport size": getViewportSize(),
+        "average position / viewport": averagePosition,
+        "rect position / viewport": getPositionWithinParentPage(),
       };
       console.log("iframe io", JSON.stringify(ioData));
       console.log(e);
-      window.parent.parent.postMessage(ioData, "*");
+      window.parent.postMessage(ioData, "*");
     });
   },
   {
@@ -36,4 +38,51 @@ const io = new IntersectionObserver(
   }
 );
 // Start observing an element
-io.observe(observedDiv);
+io.observe(document.body);
+
+const getPositionWithinParentPage = () => {
+  let parentDocument = null;
+  try {
+    parentDocument = window.parent.document;
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+
+  return parentDocument.getElementById("child-iframe").getBoundingClientRect();
+};
+
+const getViewportSize = () => {
+  let topWindow = null;
+
+  try {
+    topWindow = window.top.innerWidth;
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+
+  const vw =
+    topWindow.innerWidth ||
+    topWindow.document.documentElement.clientWidth ||
+    topWindow.document.body.clientWidth ||
+    0;
+  const vh =
+    topWindow.innerHeight ||
+    topWindow.document.documentElement.clientHeight ||
+    topWindow.document.body.clientHeight ||
+    0;
+
+  return `${vw} x ${vh}`;
+};
+
+window.addEventListener("message", (e) => {
+  if (e.data === "GET_POSITION") {
+    console.log("Get position from child iframe");
+    ioData = {
+      ...ioData,
+      "rect position / viewport": getPositionWithinParentPage(),
+    };
+    window.parent.postMessage(ioData, "*");
+  }
+});

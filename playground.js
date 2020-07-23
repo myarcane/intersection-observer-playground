@@ -1,17 +1,20 @@
 const page = document.querySelector("#page");
-const btnCreateIOFromIframe = document.querySelector("#create-io-from-iframe");
-const btnCreateIOFromPage = document.querySelector("#create-io-from-page");
-const btnToggleTragetOpacity = document.querySelector("#toggle-target-opacity");
-const btnGetTargetPosition = document.querySelector("#get-target-position");
+const getVisibilityDataFromIframe = document.querySelector(
+  "#get-data-from-iframe"
+);
+const getVisibilityDataFromPage = document.querySelector("#get-data-from-page");
+const toggleTargetOpacity = document.querySelector("#toggle-target-opacity");
+const getTargetPosition = document.querySelector("#get-target-position");
 let io = null;
 let opacity = 1;
 let target = null;
 let ioData = null;
 let stepIndex = 1;
+let isDataExtractedFromChildIframe = false;
 
 const stepsBtns = {
-  1: [btnCreateIOFromIframe, btnCreateIOFromPage],
-  2: [btnToggleTragetOpacity, btnGetTargetPosition],
+  1: [getVisibilityDataFromIframe, getVisibilityDataFromPage],
+  2: [toggleTargetOpacity, getTargetPosition],
 };
 
 const displayIOData = (data) => {
@@ -38,15 +41,19 @@ const removeElements = () => {
   if (io) {
     io.disconnect();
   }
+
+  isDataExtractedFromChildIframe = false;
 };
 
-btnCreateIOFromIframe.addEventListener("click", () => {
+getVisibilityDataFromIframe.addEventListener("click", () => {
   removeElements();
 
   const iframe = document.createElement("iframe");
-  iframe.src = "https://io-playground.netlify.app/iframe_with_io.html";
+  iframe.src =
+    "https://myarcane.github.io/intersection-observer-playground/iframe_with_io.html";
   iframe.width = 480;
   iframe.height = 270;
+  iframe.setAttribute("id", "child-iframe");
   iframe.setAttribute("frameborder", "0");
   iframe.className = "observed-iframe";
 
@@ -55,15 +62,17 @@ btnCreateIOFromIframe.addEventListener("click", () => {
 
   stepIndex++;
   displayBtnForStep();
+  isDataExtractedFromChildIframe = true;
 });
 
-btnCreateIOFromPage.addEventListener("click", () => {
+getVisibilityDataFromPage.addEventListener("click", () => {
   removeElements();
 
   const iframe = document.createElement("iframe");
   iframe.src = "https://io-playground.netlify.app/iframe_without_io.html";
   iframe.width = 480;
   iframe.height = 270;
+  iframe.setAttribute("id", "child-iframe");
   iframe.setAttribute("frameborder", "0");
   iframe.className = "observed-iframe";
   page.insertBefore(iframe, page.children[0]);
@@ -91,8 +100,9 @@ btnCreateIOFromPage.addEventListener("click", () => {
           isIntersecting: e.isIntersecting,
           intersectionRatio: e.intersectionRatio,
           isVisible: e.isVisible,
-          position: iframe.getBoundingClientRect(),
-          averagePosition: averagePosition,
+          "viewport size": getViewportSize(),
+          "average position / viewport": averagePosition,
+          "rect position / viewport": iframe.getBoundingClientRect(),
         };
         displayIOData(ioData);
         console.log(e);
@@ -109,9 +119,10 @@ btnCreateIOFromPage.addEventListener("click", () => {
   io.observe(iframe);
   stepIndex++;
   displayBtnForStep();
+  isDataExtractedFromChildIframe = false;
 });
 
-btnToggleTragetOpacity.addEventListener("click", () => {
+toggleTargetOpacity.addEventListener("click", () => {
   if (opacity === 1) {
     target.style.opacity = "0";
     opacity = 0;
@@ -121,18 +132,47 @@ btnToggleTragetOpacity.addEventListener("click", () => {
   }
 });
 
-btnGetTargetPosition.addEventListener("click", () => {
+getTargetPosition.addEventListener("click", () => {
   if (target) {
-    ioData = { ...ioData, position: target.getBoundingClientRect() };
-    displayIOData(ioData);
+    if (isDataExtractedFromChildIframe) {
+      target.contentWindow.postMessage("GET_POSITION", "*");
+    } else {
+      ioData = {
+        ...ioData,
+        "rect position / viewport": target.getBoundingClientRect(),
+      };
+      displayIOData(ioData);
+    }
   }
 });
 
+const getViewportSize = () => {
+  let topWindow = null;
+
+  try {
+    topWindow = window.top;
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+
+  const vw =
+    topWindow.innerWidth ||
+    topWindow.document.documentElement.clientWidth ||
+    topWindow.document.body.clientWidth ||
+    0;
+  const vh =
+    topWindow.innerHeight ||
+    topWindow.document.documentElement.clientHeight ||
+    topWindow.document.body.clientHeight ||
+    0;
+
+  return `${vw} x ${vh}`;
+};
+
 const displayBtnForStep = () => {
   Object.keys(stepsBtns).forEach(function (key) {
-    console.log("###key", key);
     if (key == stepIndex) {
-      console.log("###step index");
       const btnsToDisplay = stepsBtns[key];
       btnsToDisplay.forEach(function (btn) {
         btn.style.display = "inline-block";
@@ -147,3 +187,13 @@ const displayBtnForStep = () => {
 };
 
 displayBtnForStep();
+
+window.onresize = () => {
+  if (target && !isDataExtractedFromChildIframe) {
+    ioData = {
+      ...ioData,
+      "viewport size": getViewportSize(),
+    };
+    displayIOData(ioData);
+  }
+};
