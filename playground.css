@@ -1,3 +1,7 @@
+:root {
+  --header-height: 100px;
+}
+
 html {
   font-family: "Lato", "Lucida Grande", "Lucida Sans Unicode", Tahoma,
     Sans-Serif;
@@ -9,56 +13,53 @@ html {
 }
 
 #page {
-  height: 300vh;
+  height: 500vh;
   width: 300vw;
   background: #ffdd40;
 }
 
-.observed-iframe {
-  position: absolute;
-  top: 100vh;
-  left: 25vh;
+.step1 {
+  display: inline-block;
 }
 
-.observed-div {
+.step2 {
+  display: none;
+}
+
+.observed-iframe {
   position: absolute;
-  top: 100vh;
+  top: 300vh;
   left: 25vh;
-  width: 480px;
-  height: 270px;
-  padding: 0;
-  margin: 0;
-  background: #333642;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 23px;
-  color: white;
-  font-family: Monaco, MonoSpace;
 }
 
 #output {
   position: fixed;
-  top: 50px;
+  top: 100px;
   right: 0px;
   width: 500px;
-  height: 100vh;
+  height: calc(100vh - var(--header-height));
   display: flex;
   justify-content: center;
   align-items: center;
   background: #333642;
+  border: 1px solid;
+  border-color: white;
 }
 
 #controls {
   position: fixed;
   top: 0px;
-  right: 0px;
-  width: 500px;
-  height: 50px;
+  left: 0px;
+  width: 100vw;
+  height: var(--header-height);
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   background: #333642;
+  border: 1px solid;
+  border-color: white;
+  flex-wrap: wrap;
 }
 
 #io-output {
@@ -77,11 +78,11 @@ html {
   font-family: "Lato", "Lucida Grande", "Lucida Sans Unicode", Tahoma,
     Sans-Serif;
   -webkit-appearance: none;
-  font-size: 1rem;
+  font-size: 12px;
+  display: none;
   text-shadow: none;
   line-height: 1.2;
-  display: inline-block;
-  padding: 10px 16px;
+  padding: 5px 14px;
   margin: 0 10px 0 0;
   position: relative;
   border-radius: 4px;

@@ -1,10 +1,18 @@
 const page = document.querySelector("#page");
-const btnAddIframe = document.querySelector("#add-iframe");
-const btnAddDiv = document.querySelector("#add-div");
-const btnToggleOpacity = document.querySelector("#toggle-opacity");
+const btnCreateIOFromIframe = document.querySelector("#create-io-from-iframe");
+const btnCreateIOFromPage = document.querySelector("#create-io-from-page");
+const btnToggleTragetOpacity = document.querySelector("#toggle-target-opacity");
+const btnGetTargetPosition = document.querySelector("#get-target-position");
 let io = null;
 let opacity = 1;
 let target = null;
+let ioData = null;
+let stepIndex = 1;
+
+const stepsBtns = {
+  1: [btnCreateIOFromIframe, btnCreateIOFromPage],
+  2: [btnToggleTragetOpacity, btnGetTargetPosition],
+};
 
 const displayIOData = (data) => {
   let ioLog = "";
@@ -22,14 +30,9 @@ window.addEventListener("message", (e) => {
 
 const removeElements = () => {
   const iframe = document.querySelector(".observed-iframe");
-  const div = document.querySelector(".observed-div");
 
   if (iframe) {
     page.removeChild(iframe);
-  }
-
-  if (div) {
-    page.removeChild(div);
   }
 
   if (io) {
@@ -37,28 +40,34 @@ const removeElements = () => {
   }
 };
 
-btnAddIframe.addEventListener("click", () => {
+btnCreateIOFromIframe.addEventListener("click", () => {
   removeElements();
 
   const iframe = document.createElement("iframe");
-  iframe.src = "./iframe/iframe.html";
+  iframe.src = "./iframes/iframe_with_io.html";
   iframe.width = 480;
   iframe.height = 270;
   iframe.setAttribute("frameborder", "0");
   iframe.className = "observed-iframe";
 
-  page.insertBefore(iframe, page.children[1]);
+  page.insertBefore(iframe, page.children[0]);
   target = iframe;
+
+  stepIndex++;
+  displayBtnForStep();
 });
 
-btnAddDiv.addEventListener("click", () => {
+btnCreateIOFromPage.addEventListener("click", () => {
   removeElements();
 
-  const div = document.createElement("div");
-  div.className = "observed-div";
-  div.innerHTML = "child div";
-  page.insertBefore(div, page.children[1]);
-  target = div;
+  const iframe = document.createElement("iframe");
+  iframe.src = "./iframes/iframe_without_io.html";
+  iframe.width = 480;
+  iframe.height = 270;
+  iframe.setAttribute("frameborder", "0");
+  iframe.className = "observed-iframe";
+  page.insertBefore(iframe, page.children[0]);
+  target = iframe;
 
   io = new IntersectionObserver(
     (entries) => {
@@ -76,14 +85,13 @@ btnAddDiv.addEventListener("click", () => {
           averagePosition = "inside";
         }
 
-        const ioData = {
+        ioData = {
           boundingClientRect: e.boundingClientRect,
           intersectionRect: e.intersectionRect,
           isIntersecting: e.isIntersecting,
           intersectionRatio: e.intersectionRatio,
           isVisible: e.isVisible,
-          extraData: "_________________________________________________",
-          position: div.getBoundingClientRect(),
+          position: iframe.getBoundingClientRect(),
           averagePosition: averagePosition,
         };
         displayIOData(ioData);
@@ -98,10 +106,12 @@ btnAddDiv.addEventListener("click", () => {
     }
   );
   // Start observing an element
-  io.observe(div);
+  io.observe(iframe);
+  stepIndex++;
+  displayBtnForStep();
 });
 
-btnToggleOpacity.addEventListener("click", () => {
+btnToggleTragetOpacity.addEventListener("click", () => {
   if (opacity === 1) {
     target.style.opacity = "0";
     opacity = 0;
@@ -110,3 +120,30 @@ btnToggleOpacity.addEventListener("click", () => {
     opacity = 1;
   }
 });
+
+btnGetTargetPosition.addEventListener("click", () => {
+  if (target) {
+    ioData = { ...ioData, position: target.getBoundingClientRect() };
+    displayIOData(ioData);
+  }
+});
+
+const displayBtnForStep = () => {
+  Object.keys(stepsBtns).forEach(function (key) {
+    console.log("###key", key);
+    if (key == stepIndex) {
+      console.log("###step index");
+      const btnsToDisplay = stepsBtns[key];
+      btnsToDisplay.forEach(function (btn) {
+        btn.style.display = "inline-block";
+      });
+    } else {
+      const btnsToHide = stepsBtns[key];
+      btnsToHide.forEach(function (btn) {
+        btn.style.display = "none";
+      });
+    }
+  });
+};
+
+displayBtnForStep();

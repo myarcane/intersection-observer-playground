@@ -22,7 +22,6 @@ const io = new IntersectionObserver(
         isIntersecting: e.isIntersecting,
         intersectionRatio: e.intersectionRatio,
         isVisible: e.isVisible,
-        extraData: "_________________________________________________",
         position: observedDiv.getBoundingClientRect(),
         averagePosition: averagePosition,
       };
