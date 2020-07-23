@@ -44,7 +44,7 @@ btnCreateIOFromIframe.addEventListener("click", () => {
   removeElements();
 
   const iframe = document.createElement("iframe");
-  iframe.src = "./iframes/iframe_with_io.html";
+  iframe.src = "https://io-playground.netlify.app/iframe_with_io.html";
   iframe.width = 480;
   iframe.height = 270;
   iframe.setAttribute("frameborder", "0");
@@ -61,7 +61,7 @@ btnCreateIOFromPage.addEventListener("click", () => {
   removeElements();
 
   const iframe = document.createElement("iframe");
-  iframe.src = "./iframes/iframe_without_io.html";
+  iframe.src = "https://io-playground.netlify.app/iframe_without_io.html";
   iframe.width = 480;
   iframe.height = 270;
   iframe.setAttribute("frameborder", "0");
