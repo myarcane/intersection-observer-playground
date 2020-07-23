@@ -56,7 +56,7 @@ const getViewportSize = () => {
   let topWindow = null;
 
   try {
-    topWindow = window.top.innerWidth;
+    topWindow = window.top;
   } catch (error) {
     console.error(error);
     return undefined;
