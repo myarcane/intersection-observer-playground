@@ -50,7 +50,7 @@ getVisibilityDataFromIframe.addEventListener("click", () => {
 
   const iframe = document.createElement("iframe");
   iframe.src =
-    "https://myarcane.github.io/intersection-observer-playground/iframe_with_io.html";
+    "https://myarcane.github.io/intersection-observer-playground/iframes/iframe_with_io.html";
   iframe.width = 480;
   iframe.height = 270;
   iframe.setAttribute("id", "child-iframe");
