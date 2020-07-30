@@ -91,15 +91,17 @@ const getTargetFromParentDocument = () => {
 
 const getViewportSize = () => {
   let topWindow = null;
+  let vw = null;
+  let vh = null;
 
   try {
     topWindow = window.top;
-    const vw =
+    vw =
       topWindow.innerWidth ||
       topWindow.document.documentElement.clientWidth ||
       topWindow.document.body.clientWidth ||
       0;
-    const vh =
+    vh =
       topWindow.innerHeight ||
       topWindow.document.documentElement.clientHeight ||
       topWindow.document.body.clientHeight ||
