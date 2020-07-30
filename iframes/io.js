@@ -204,13 +204,7 @@ const getYScrollDistanceToVisibilty = (target, intersectionRatio) => {
 };
 
 window.addEventListener("message", (e) => {
-  if (e.data === "GET_POSITION") {
-    console.log("Get position from child iframe");
-    ioData = {
-      ...ioData,
-      "rect position / viewport": getPositionWithinParentPage(),
-    };
-  } else if (e.data === "IS_NODE_HIDDEN") {
+  if (e.data === "IS_NODE_HIDDEN") {
     ioData = {
       ...ioData,
       isHidden: isNodeHidden(),

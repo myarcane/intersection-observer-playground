@@ -4,7 +4,6 @@ const toggleTargetVisibility = document.querySelector(
   "#toggle-target-visibility"
 );
 const toggleTargetDisplay = document.querySelector("#toggle-target-display");
-const getTargetPosition = document.querySelector("#get-target-position");
 const selectContext = document.querySelector("#select-context");
 const toggleFixedMode = document.querySelector("#toggle-fixed-mode");
 const toggleOverflowMode = document.querySelector("#toggle-overflow-mode");
@@ -20,14 +19,15 @@ let visibilityData = null;
 let stepIndex = 1;
 let isDataExtractedFromChildIframe = false;
 
-const PROD_URL = "https://myarcane.github.io/intersection-observer-playground/";
+const GITHUB_URL =
+  "https://myarcane.github.io/intersection-observer-playground/";
+const NETLIFY_URL = "https://io-playground.netlify.app/";
 
 const stepsBtns = {
   2: [
     toggleTargetDisplay,
     toggleTargetVisibility,
     toggleTargetOpacity,
-    getTargetPosition,
     toggleFixedMode,
     toggleOverflowMode,
   ],
@@ -73,12 +73,16 @@ const clean = () => {
   displayVisibilityData({});
 };
 
-const getVisibilityDataFromIframe = () => {
+const getVisibilityDataFromIframe = (crossorigin = true) => {
   clean();
 
   const iframe = document.createElement("iframe");
   iframe.src = `${
-    window.location.protocol === "file:" ? "./" : PROD_URL
+    window.location.protocol === "file:"
+      ? "./"
+      : crossorigin
+      ? NETLIFY_URL
+      : GITHUB_URL
   }iframes/iframe_with_io.html`;
   iframe.width = 480;
   iframe.height = 270;
@@ -261,19 +265,6 @@ toggleTargetDisplay.addEventListener("click", () => {
   target.style.display = display;
 });
 
-getTargetPosition.addEventListener("click", () => {
-  if (target) {
-    if (isDataExtractedFromChildIframe) {
-      target.contentWindow.postMessage("GET_POSITION", "*");
-    } else {
-      displayVisibilityData({
-        ...visibilityData,
-        getBoundingClientRect: target.getBoundingClientRect(),
-      });
-    }
-  }
-});
-
 const getViewportSize = () => {
   let topWindow = null;
 
@@ -371,8 +362,11 @@ function isNodeClipped(node) {
 
 selectContext.addEventListener("change", (event) => {
   switch (event.target.value) {
-    case "visibility-data-from-iframe":
-      getVisibilityDataFromIframe();
+    case "visibility-data-from-iframe-cross-origin":
+    case "visibility-data-from-iframe-same-origin":
+      getVisibilityDataFromIframe(
+        event.target.value === "visibility-data-from-iframe-cross-origin"
+      );
       break;
     case "visibility-data-from-page":
       getVisibilityDataFromPage();
