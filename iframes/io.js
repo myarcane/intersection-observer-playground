@@ -228,7 +228,7 @@ window.addEventListener("message", (e) => {
 window.top.addEventListener("scroll", function () {
   ioData = {
     ...ioData,
-    getBoundingClientRect: target.getBoundingClientRect(),
+    getBoundingClientRect: getTargetFromParentDocument().getBoundingClientRect(),
     xScrollDistanceToVisibility: getXScrollDistanceToVisibilty(
       getTargetFromParentDocument(),
       ioData.intersectionRatio
