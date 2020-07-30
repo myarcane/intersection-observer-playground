@@ -146,7 +146,7 @@ function isNodeClipped(node) {
     while (node) {
       if (
         node.style.position === "fixed" ||
-        document.body.style.overflow === "hidden"
+        parentDocument.body.style.overflow === "hidden"
       ) {
         break;
       } else if (
@@ -218,7 +218,7 @@ window.addEventListener("message", (e) => {
   } else if (e.data === "IS_NODE_CLIPPED") {
     ioData = {
       ...ioData,
-      isNodeClipped: isNodeClipped(),
+      isClipped: isNodeClipped(),
     };
   }
 
