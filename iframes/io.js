@@ -117,7 +117,7 @@ const getViewportSize = () => {
 function isNodeHidden() {
   try {
     const parentDocument = window.parent.document;
-    const node = parentDocument.getElementById("child-iframe");
+    let node = parentDocument.getElementById("child-iframe");
     while (node) {
       const styles = window.getComputedStyle(node);
       if (
@@ -141,7 +141,7 @@ function isNodeHidden() {
 function isNodeClipped(node) {
   try {
     const parentDocument = window.parent.document;
-    const node = parentDocument.getElementById("child-iframe");
+    let node = parentDocument.getElementById("child-iframe");
     let isClipped = true;
     while (node) {
       if (
@@ -225,6 +225,32 @@ window.addEventListener("message", (e) => {
   window.parent.postMessage(ioData, "*");
 });
 
-window.top.addEventListener("scroll", function (e) {
-  console.log("scroll");
+window.top.addEventListener("scroll", function () {
+  ioData = {
+    ...ioData,
+    getBoundingClientRect: target.getBoundingClientRect(),
+    xScrollDistanceToVisibility: getXScrollDistanceToVisibilty(
+      getTargetFromParentDocument(),
+      ioData.intersectionRatio
+    ),
+    yScrollDistanceToVisibility: getYScrollDistanceToVisibilty(
+      getTargetFromParentDocument(),
+      ioData.intersectionRatio
+    ),
+  };
+
+  window.parent.postMessage(ioData, "*");
 });
+
+window.top.onresize = () => {
+  const { vw, vh } = getViewportSize();
+  ioData = {
+    ...ioData,
+    viewportSize: `${vw} x ${vh}`,
+    bulkRatio:
+      (ioData.intersectionRect.width * ioData.intersectionRect.height) /
+      (vw * vh),
+  };
+
+  window.parent.postMessage(ioData, "*");
+};

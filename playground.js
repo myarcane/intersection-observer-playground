@@ -201,7 +201,7 @@ toggleFixedMode.addEventListener("click", () => {
   target.style.position = position;
 
   if (isDataExtractedFromChildIframe) {
-    target.contentWindow.postMessage("IS_NODE_FIXED", "*");
+    target.contentWindow.postMessage("IS_NODE_CLIPPED", "*");
   } else {
     displayVisibilityData({
       ...visibilityData,
@@ -247,7 +247,7 @@ toggleOverflowMode.addEventListener("click", () => {
   document.body.style.overflow = overflow;
 
   if (isDataExtractedFromChildIframe) {
-    target.contentWindow.postMessage("IS_OVERFLOW_MODE", "*");
+    target.contentWindow.postMessage("IS_NODE_CLIPPED", "*");
   } else {
     displayVisibilityData({
       ...visibilityData,
