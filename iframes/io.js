@@ -8,24 +8,63 @@ const io = new IntersectionObserver(
       if (e.intersectionRatio === 0) {
         averagePosition = "outside";
       } else if (e.intersectionRatio < 1) {
-        if (e.boundingClientRect.top < e.intersectionRect.top) {
-          averagePosition = "top";
-        } else {
-          averagePosition = "bottom";
+        if (
+          e.intersectionRect.width < e.boundingClientRect.width &&
+          e.intersectionRect.height < e.boundingClientRect.height
+        ) {
+          averagePosition = `${e.intersectionRect.top > 1 ? "top" : "bottom"} ${
+            e.intersectionRect.left > 1 ? "left" : "right"
+          }`;
+        } else if (
+          e.intersectionRect.width < e.boundingClientRect.width &&
+          e.intersectionRect.height === e.boundingClientRect.height
+        ) {
+          averagePosition = e.intersectionRect.left > 1 ? "left" : "right";
+        } else if (
+          e.intersectionRect.height < e.boundingClientRect.height &&
+          e.intersectionRect.width === e.boundingClientRect.width
+        ) {
+          averagePosition = e.intersectionRect.top > 1 ? "top" : "bottom";
         }
       } else {
         averagePosition = "inside";
       }
 
       ioData = {
+        viewportSize: getViewportSize()
+          ? `${getViewportSize().vw} x ${getViewportSize().vh}`
+          : getViewportSize(),
+        targetSize: `${document.body.getBoundingClientRect().width} x ${
+          document.body.getBoundingClientRect().height
+        }`,
         boundingClientRect: e.boundingClientRect,
         intersectionRect: e.intersectionRect,
         isIntersecting: e.isIntersecting,
         intersectionRatio: e.intersectionRatio,
         isVisible: e.isVisible,
-        "vewport size": getViewportSize(),
-        "average position / viewport": averagePosition,
-        "rect position / viewport": getPositionWithinParentPage(),
+        intersectionPosition: averagePosition,
+        bulkRatio: getViewportSize()
+          ? (e.intersectionRect.width * e.intersectionRect.height) /
+            (getViewportSize().vw * getViewportSize().vh)
+          : undefined,
+        getBoundingClientRect: getTargetFromParentDocument()
+          ? getTargetFromParentDocument().getBoundingClientRect()
+          : undefined,
+        xScrollDistanceToVisibility: getTargetFromParentDocument()
+          ? getXScrollDistanceToVisibilty(
+              getTargetFromParentDocument(),
+              e.intersectionRatio
+            )
+          : undefined,
+
+        yScrollDistanceToVisibility: getTargetFromParentDocument()
+          ? getYScrollDistanceToVisibilty(
+              getTargetFromParentDocument(),
+              e.intersectionRatio
+            )
+          : undefined,
+        isHidden: isNodeHidden(),
+        isClipped: isNodeClipped(),
       };
       console.log("iframe io", JSON.stringify(ioData));
       console.log(e);
@@ -34,22 +73,20 @@ const io = new IntersectionObserver(
   },
   {
     /* Using default options. Details below */
-    threshold: [0, 0.25, 0.5, 0.75, 1],
+    threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
   }
 );
 // Start observing an element
 io.observe(document.body);
 
-const getPositionWithinParentPage = () => {
-  let parentDocument = null;
+const getTargetFromParentDocument = () => {
   try {
-    parentDocument = window.parent.document;
+    const parentDocument = window.parent.document;
+    return parentDocument.getElementById("child-iframe");
   } catch (error) {
     console.error(error);
     return undefined;
   }
-
-  return parentDocument.getElementById("child-iframe").getBoundingClientRect();
 };
 
 const getViewportSize = () => {
@@ -57,23 +94,111 @@ const getViewportSize = () => {
 
   try {
     topWindow = window.top;
+    const vw =
+      topWindow.innerWidth ||
+      topWindow.document.documentElement.clientWidth ||
+      topWindow.document.body.clientWidth ||
+      0;
+    const vh =
+      topWindow.innerHeight ||
+      topWindow.document.documentElement.clientHeight ||
+      topWindow.document.body.clientHeight ||
+      0;
   } catch (error) {
     console.error(error);
     return undefined;
   }
 
-  const vw =
-    topWindow.innerWidth ||
-    topWindow.document.documentElement.clientWidth ||
-    topWindow.document.body.clientWidth ||
-    0;
-  const vh =
-    topWindow.innerHeight ||
-    topWindow.document.documentElement.clientHeight ||
-    topWindow.document.body.clientHeight ||
-    0;
+  return { vw, vh };
+};
 
-  return `${vw} x ${vh}`;
+function isNodeHidden() {
+  try {
+    const parentDocument = window.parent.document;
+    const node = parentDocument.getElementById("child-iframe");
+    while (node) {
+      const styles = window.getComputedStyle(node);
+      if (
+        styles.getPropertyValue("visibility").toLowerCase() === "hidden" ||
+        styles.getPropertyValue("opacity").toLocaleLowerCase() === "0"
+      ) {
+        return true;
+      }
+      node =
+        node.parentNode instanceof HTMLElement && node.tagName !== "BODY"
+          ? node.parentNode
+          : null;
+    }
+    return false;
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+}
+
+function isNodeClipped(node) {
+  try {
+    const parentDocument = window.parent.document;
+    const node = parentDocument.getElementById("child-iframe");
+    let isClipped = true;
+    while (node) {
+      if (
+        node.style.position === "fixed" ||
+        document.body.style.overflow === "hidden"
+      ) {
+        break;
+      } else if (
+        node.scrollHeight === node.clientHeight &&
+        node.scrollWidth === node.clientWidth
+      ) {
+        node =
+          node.parentNode instanceof HTMLElement && node.tagName !== "BODY"
+            ? node.parentNode
+            : null;
+      } else {
+        isClipped = false;
+        break;
+      }
+    }
+    return isClipped;
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+}
+
+const getXScrollDistanceToVisibilty = (target, intersectionRatio) => {
+  if (intersectionRatio !== 0) {
+    return 0;
+  } else if (
+    target.getBoundingClientRect().x + target.getBoundingClientRect().width <
+    0
+  ) {
+    return Math.abs(
+      target.getBoundingClientRect().x + target.getBoundingClientRect().width
+    );
+  } else if (target.getBoundingClientRect().x > getViewportSize().vw) {
+    return target.getBoundingClientRect().x - getViewportSize().vw;
+  }
+
+  return 0;
+};
+
+const getYScrollDistanceToVisibilty = (target, intersectionRatio) => {
+  if (intersectionRatio !== 0) {
+    return 0;
+  } else if (
+    target.getBoundingClientRect().y + target.getBoundingClientRect().height <
+    0
+  ) {
+    return Math.abs(
+      target.getBoundingClientRect().y + target.getBoundingClientRect().height
+    );
+  } else if (target.getBoundingClientRect().y > getViewportSize().vh) {
+    return target.getBoundingClientRect().y - getViewportSize().vh;
+  }
+
+  return 0;
 };
 
 window.addEventListener("message", (e) => {
@@ -83,6 +208,21 @@ window.addEventListener("message", (e) => {
       ...ioData,
       "rect position / viewport": getPositionWithinParentPage(),
     };
-    window.parent.postMessage(ioData, "*");
+  } else if (e.data === "IS_NODE_HIDDEN") {
+    ioData = {
+      ...ioData,
+      isHidden: isNodeHidden(),
+    };
+  } else if (e.data === "IS_NODE_CLIPPED") {
+    ioData = {
+      ...ioData,
+      isNodeClipped: isNodeClipped(),
+    };
   }
+
+  window.parent.postMessage(ioData, "*");
+});
+
+window.top.addEventListener("scroll", function (e) {
+  console.log("scroll");
 });

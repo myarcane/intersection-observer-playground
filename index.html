@@ -8,13 +8,23 @@
 
 <body>
 	<div id="page">
+		<div id="context">
+			<select id="select-context">
+				<option value="choose-context">Choose context</option>
+				<option value="visibility-data-from-iframe">Get visibility data from child Iframe</option>
+				<option value="visibility-data-from-page">Get visibility data from parent Page</option>
+			</select>
+			</form>
+		</div>
 		<div id="output">
 			<div id='io-output' />
 		</div>
 		<div id="controls">
-			<button id="get-data-from-iframe" class="button">Get visibility data from Iframe</button>
-			<button id="get-data-from-page" class="button">Get visibility data from parent Page</button>
+			<button id="toggle-target-display" class="button">Toggle display</button>
+			<button id="toggle-target-visibility" class="button">Toggle visibility</button>
 			<button id="toggle-target-opacity" class="button">Toggle opacity</button>
+			<button id="toggle-fixed-mode" class="button">Toggle fixed mode</button>
+			<button id="toggle-overflow-mode" class="button">Toggle overflow mode</button>
 			<button id="get-target-position" class="button">Get target position</button>
 		</div>
 	</div>
