@@ -66,7 +66,6 @@ const io = new IntersectionObserver(
         isHidden: isNodeHidden(),
         isClipped: isNodeClipped(),
       };
-      console.log("iframe io", JSON.stringify(ioData));
       console.log(e);
       window.parent.postMessage(ioData, "*");
     });
