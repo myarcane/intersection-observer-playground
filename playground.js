@@ -103,7 +103,7 @@ const getVisibilityDataFromPage = () => {
 
   const iframe = document.createElement("iframe");
   iframe.src = `${
-    window.location.protocol === "file:" ? "./" : PROD_URL
+    window.location.protocol === "file:" ? "./" : GITHUB_URL
   }iframes/iframe_without_io.html`;
   iframe.width = 480;
   iframe.height = 270;
