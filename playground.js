@@ -145,6 +145,7 @@ const getVisibilityDataFromPage = () => {
         const { vw, vh } = getViewportSize();
 
         visibilityData = {
+          isBrowserTabVisible: !document.hidden,
           viewportSize: `${vw} x ${vh}`,
           targetSize: `${iframe.getBoundingClientRect().width} x ${
             iframe.getBoundingClientRect().height
@@ -426,5 +427,15 @@ window.addEventListener("scroll", function (e) {
         visibilityData.intersectionRatio
       ),
     });
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (target && !isDataExtractedFromChildIframe) {
+    displayVisibilityData({
+      ...visibilityData,
+      isBrowserTabVisible: !document.hidden,
+    });
+    console.log(visibilityData);
   }
 });

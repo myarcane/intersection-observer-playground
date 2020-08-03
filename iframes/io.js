@@ -31,6 +31,7 @@ const io = new IntersectionObserver(
       }
 
       ioData = {
+        isBrowserTabHidden: document.hidden,
         viewportSize: getViewportSize()
           ? `${getViewportSize().vw} x ${getViewportSize().vh}`
           : getViewportSize(),
@@ -247,3 +248,12 @@ window.top.onresize = () => {
 
   window.parent.postMessage(ioData, "*");
 };
+
+window.top.document.addEventListener("visibilitychange", () => {
+  ioData = {
+    ...ioData,
+    isBrowserTabVisible: !document.hidden,
+  };
+
+  console.log(ioData);
+});
